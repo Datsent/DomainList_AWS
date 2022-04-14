@@ -1,3 +1,7 @@
+provider "aws" {
+  region = "us-east-1"
+}
+
 /* Creating cluster  */
 resource "aws_ecs_cluster" "exam_cluster" {
   name = "exam-cluster"
@@ -154,5 +158,8 @@ resource "aws_lb_listener" "listener" {
 }
 output "web_link" {
   value = "Open in browser: ${aws_alb.load_balancer.dns_name}"
+}
+output "web_link1" {
+  value = "Repository link: ${aws_ecr_repository.repository_demy.repository_url}"
 }
 
