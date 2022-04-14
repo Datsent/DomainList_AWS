@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Domains Status</title>
+    <LINK rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+    <meta name="viewport"  http-equiv="refresh" content="20" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<div id="container">
+    <div id="domains">
+        <h1>Domains List </h1>
+        <form action="/data" method="POST">
+
+            <label>Add Domain:</label>
+            <div>
+            <input type="text" name="shortcode" value="" required >
+            <input type="submit" value="Submit" onclick="$('#loading').show();">
+            <a href="{{ url_for('.download_file') }}">
+                <img src="static/downloadicon.png" alt="Download" width="25" height="25">
+            </a>
+            </div>
+        </form>
+        <div>
+            <a href="{{url_for('.refreshed') }}" onclick="$('#loading').show();">
+                <img src="downloadicon.png" alt="Refresh" width="25" height="25">
+            </a>
+        </div>
+        <div id="loading" class="loader" style="display:none;"><img src="loading.gif" alt="" /></div>
+        <div id="score">
+		<table width="400px" style="table-layout:fixed;" class="gridtable" id="Select-b" style="font-size: 25px;">
+			<tr>
+				<th width="50px" >Domain</th>
+				<th width="30px" align="center">Valid</th>
+                <th width="30px" align="center">CLL Valid</th>
+			</tr>
+			{% for i in SCORES %}
+			<tr>
+				<td scope="row" id="domain" title="{{ i[0] }}"> {{ i[0] }} </td>
+				<td scope="row" id="valid_d" align="center"> {{ i[1] }} </td>
+                <td scope="row" id="cll_valid_d" align="center"> {{ i[2] }} </td>
+			</tr>
+			{% endfor %}
+		</table>
+		</div>
+    </div>
+</div>
+</body>
+</html>
