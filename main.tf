@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "us-east-1"
+  region = var.region
 }
 
 /* Creating cluster  */
@@ -16,7 +16,7 @@ resource "aws_ecs_task_definition" "exam_task" {
     {
       "name": "exam-task",
 
-      "image": "453169210778.dkr.ecr.us-east-1.amazonaws.com/test:latest",
+      "image": "${var.image_url}",
       "essential": true,
       "portMappings": [
         {
@@ -159,7 +159,5 @@ resource "aws_lb_listener" "listener" {
 output "web_link" {
   value = "Open in browser: ${aws_alb.load_balancer.dns_name}"
 }
-output "web_link1" {
-  value = "Repository link: ${aws_ecr_repository.repository_demy.repository_url}"
-}
+
 
