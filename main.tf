@@ -166,9 +166,6 @@ output "web_link" {
 # Create CodeBuild  #
 #####################
 
-provider "aws" {
-  region = "us-east-1"
-}
 resource "aws_ecr_repository" "ecs_push" {
   name = "ecs_push"
 }
