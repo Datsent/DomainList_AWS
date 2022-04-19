@@ -5,18 +5,18 @@ provider "aws" {
 #####################
 # Creating cluster  #
 #####################
-resource "aws_ecs_cluster" "exam_cluster" {
-  name = "exam-cluster"
+resource "aws_ecs_cluster" "cluster" {
+  name = var.dl_cluster
 }
 /* Setup task */
 
-resource "aws_ecs_task_definition" "exam_task" {
-  family                   = "exam-task" # The name of task
+resource "aws_ecs_task_definition" "task" {
+  family                   = var.dl_task # The name of task
   /* Setup container */
   container_definitions    = <<DEFINITION
   [
     {
-      "name": "exam-task",
+      "name": "${var.dl_task}",
 
       "image": "${var.image_url}",
       "essential": true,
@@ -35,11 +35,11 @@ resource "aws_ecs_task_definition" "exam_task" {
   network_mode             = "awsvpc"    # Using awsvpc as our network mode as this is required for Fargate
   memory                   = 512         # Setup memory for our container requires
   cpu                      = 256         # Setup CPU for our container requires
-  execution_role_arn       = "${aws_iam_role.ecsTaskExecutionRole.arn}"
+  execution_role_arn       = "${aws_iam_role.dl_task_role.arn}"
 }
 
-resource "aws_iam_role" "ecsTaskExecutionRole" {
-  name               = "ecsTaskExecutionRole"
+resource "aws_iam_role" "dl_task_role" {
+  name               = "dl_task_role"
   assume_role_policy = "${data.aws_iam_policy_document.assume_role_policy.json}"
 }
 
@@ -54,16 +54,16 @@ data "aws_iam_policy_document" "assume_role_policy" {
   }
 }
 
-resource "aws_iam_role_policy_attachment" "ecsTaskExecutionRole_policy" {
-  role       = "${aws_iam_role.ecsTaskExecutionRole.name}"
+resource "aws_iam_role_policy_attachment" "dl_task_role_policy" {
+  role       = "${aws_iam_role.dl_task_role.name}"
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
 /* Service */
 resource "aws_ecs_service" "exam_service" {
   name            = "exam-service"                             # Name of service
-  cluster         = "${aws_ecs_cluster.exam_cluster.id}"             # Link to cluster
-  task_definition = "${aws_ecs_task_definition.exam_task.arn}" # link to task
+  cluster         = "${aws_ecs_cluster.cluster.id}"             # Link to cluster
+  task_definition = "${aws_ecs_task_definition.task.arn}" # link to task
   launch_type     = "FARGATE"
   desired_count   = 2 # Seting number of replicas
   /* Network configuration for service */
@@ -75,7 +75,7 @@ resource "aws_ecs_service" "exam_service" {
   /* Setting load balancer to service */
   load_balancer {
     target_group_arn = "${aws_lb_target_group.target_group.arn}" # Link to target group
-    container_name   = "${aws_ecs_task_definition.exam_task.family}"  # Lint to our task
+    container_name   = "${aws_ecs_task_definition.task.family}"  # Lint to our task
     container_port   = 5000   # Container port
   }
 }
@@ -166,8 +166,8 @@ output "web_link" {
 # Create CodeBuild  #
 #####################
 
-resource "aws_ecr_repository" "ecs_push" {
-  name = "ecs_push"
+resource "aws_ecr_repository" "ecs_repo" {
+  name = var.ecr_repository
 }
 
 resource "aws_codebuild_project" "codebuild_project" {
@@ -220,7 +220,7 @@ resource "aws_codebuild_project" "codebuild_project" {
 
 # IAM
 resource "aws_iam_role" "codebuild_role" {
-  name  = "ecr_push_role"
+  name  = "dl_codebuild_role"
 
   assume_role_policy = <<EOF
 {
@@ -237,9 +237,3 @@ resource "aws_iam_role" "codebuild_role" {
 }
 EOF
 }
-
-resource "aws_iam_role_policy_attachment" "codebuild_deploy" {
-  role       = aws_iam_role.codebuild_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
-}
-
