@@ -2,7 +2,9 @@ provider "aws" {
   region = var.region
 }
 
-/* Creating cluster  */
+#####################
+# Creating cluster  #
+#####################
 resource "aws_ecs_cluster" "exam_cluster" {
   name = "exam-cluster"
 }
@@ -57,7 +59,10 @@ resource "aws_iam_role_policy_attachment" "ecsTaskExecutionRole_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
-/* Service */
+############
+# Service  #
+############
+
 resource "aws_ecs_service" "exam_service" {
   name            = "exam-service"                             # Name of service
   cluster         = "${aws_ecs_cluster.exam_cluster.id}"             # Link to cluster
@@ -94,11 +99,11 @@ resource "aws_security_group" "service_security_group" {
   }
 }
 
-# Providing a reference to our default VPC
+# Providing a reference to default VPC
 resource "aws_default_vpc" "default_vpc" {
 }
 
-# Providing a reference to our default subnets
+# Providing a reference to default subnets
 resource "aws_default_subnet" "default_subnet_a" {
   availability_zone = "us-east-1a"
 }
@@ -106,7 +111,10 @@ resource "aws_default_subnet" "default_subnet_a" {
 resource "aws_default_subnet" "default_subnet_b" {
   availability_zone = "us-east-1b"
 }
-/* Create load balancer */
+
+##################
+# Load Balancer  #
+##################
 resource "aws_alb" "load_balancer" {
   name               = "exam-lb"
   load_balancer_type = "application"
@@ -141,10 +149,7 @@ resource "aws_lb_target_group" "target_group" {
   protocol    = "HTTP"
   target_type = "ip"
   vpc_id      = "${aws_default_vpc.default_vpc.id}" # Link to the default VPC
-  health_check {
-    matcher = "200,301,302"
-    path = "/"
-  }
+
 }
 /* Create Listeners */
 resource "aws_lb_listener" "listener" {
@@ -155,9 +160,6 @@ resource "aws_lb_listener" "listener" {
     type             = "forward"
     target_group_arn = "${aws_lb_target_group.target_group.arn}" # Link to our target group
   }
-}
-output "web_link" {
-  value = "Open in browser: ${aws_alb.load_balancer.dns_name}"
 }
 
 
